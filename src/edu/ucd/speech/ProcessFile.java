@@ -1,12 +1,6 @@
 package edu.ucd.speech;
 /**
  * Process source code so we spell out punctuations and separate agglutinations
- * Using Beam.java as example file.
- * 
- * Taken from:
- * http://developer.android.com/resources/samples/AndroidBeamDemo/src/com/example/android/beam/Beam.html
- * 
- * NOTE: Have not dealt with agglutinations yet.
  * @author Ming
  *
  */

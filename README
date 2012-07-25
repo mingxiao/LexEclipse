@@ -1,0 +1,15 @@
+The purpose of this project is to go through java code and spell out the
+puncutations and separate variable names such that we can use them to create 
+a language model.
+
+ProcessFile.java ===
+
+The main method of interest is process(). Given an input file name and
+a corresponding output file name we spell out all puncutation and split
+agglutinations (variable names that are in camel case and/or snake case)
+
+
+Main.java ===
+
+In this class, we use a java lexer to go through each token and do the
+appropriate action with each token
