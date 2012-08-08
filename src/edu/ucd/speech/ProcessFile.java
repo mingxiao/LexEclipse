@@ -120,7 +120,7 @@ public class ProcessFile {
 	private static String process_at(String line){
 		return line.replaceAll("@", _AT); 
 	}
-	private static String process_quote(String line){
+	protected static String process_quote(String line){
 		return line.replaceAll("\"|\'", _QUOTE); //need to escape "
 	}
 	private static String process_plus(String line){
@@ -173,8 +173,9 @@ public class ProcessFile {
 		StringBuilder sb = new StringBuilder();
 		for(String s:line.split(" +|\t")){
 			if(hasCapsOrNum(s)){
-				//System.out.println(s);
+//				System.out.println(s);
 				for(String str: StringUtils.splitByCharacterTypeCamelCase(s)){
+//					System.out.println(str);
 					sb.append(str);
 					sb.append(" ");
 				}
@@ -186,6 +187,7 @@ public class ProcessFile {
 	}
 	
 	/**
+	 * DEPRECATED. This was created before we used a lexer!
 	 * numStr should be a string representation of a number
 	 * Returns a string where the numStr is split into its individual digits
 	 * "12345" -> "1 2 3 4 5"
@@ -194,31 +196,43 @@ public class ProcessFile {
 	 * INTEGER are assumed to be test values and are simply returned as is.
 	 * @param numStr
 	 */
-	public static String split_digits(String numStr){
-		try{
-			int n = Integer.parseInt(numStr);
-			if (n/10 == 0){
-				//n is one or more 0's
-				return n+" ";
-			}
-			//Get each digit of number. Use stack to preverse order
-			Stack<Integer> numStack = new Stack<Integer>();
-			while(n > 0){
-				//System.out.println(n%10);
-				numStack.push(n%10);
-				n=n/10;
-			}
-			//Convert number to string
-			StringBuilder sb = new StringBuilder();
-			while(!numStack.isEmpty()){
-				sb.append(numStack.pop()+" ");
-			}
-			return sb.toString();
-		}catch(Exception e){
-			System.err.println("Error parsing number string:"+numStr);
-			return numStr;
-		}
-		
+//	public static String split_digits(String numStr){
+//		try{
+//			int n = Integer.parseInt(numStr);
+//			if (n/10 == 0){
+//				//n is one or more 0's
+//				return n+" ";
+//			}
+//			//Get each digit of number. Use stack to preverse order
+//			Stack<Integer> numStack = new Stack<Integer>();
+//			while(n > 0){
+//				//System.out.println(n%10);
+//				numStack.push(n%10);
+//				n=n/10;
+//			}
+//			//Convert number to string
+//			StringBuilder sb = new StringBuilder();
+//			while(!numStack.isEmpty()){
+//				sb.append(numStack.pop()+" ");
+//			}
+//			return sb.toString();
+//		}catch(Exception e){
+//			System.err.println("Error parsing number string:"+numStr);
+//			return numStr;
+//		}
+//	}
+	
+	/**
+	 * numStr should be a string representation of a number
+	 * Returns a string where the numStr is split into its individual digits
+	 * "12345" -> "1 2 3 4 5"
+	 * 
+	 * We do not convert it to an int, just insert spaces in between
+	 * @param str
+	 * @return
+	 */
+	public static String split_digits_2(String str){
+		return str.replace("", " ").trim();
 	}
 	
 	/**
@@ -232,14 +246,13 @@ public class ProcessFile {
 		for(String s: line.split(" +|\t")){
 			if(s.matches("\\d+")){
 				//split the number
-				sb.append(split_digits(s));
+				sb.append(split_digits_2(s));
 			}
 			else{
 				sb.append(s);
-				sb.append(" "); //separate token with a space
 			}
+			sb.append(" "); //separate token with a space
 		}
-		
 		return sb.toString();
 	}
 	
@@ -352,8 +365,15 @@ public class ProcessFile {
 	public static String[] splitIdentifier(String ident){
 		List<String> words = new ArrayList<String>();
 		for(String s : snakeCaseToWords(ident)){
-			for (String t: camelCaseToWords(s))
-				words.add(t);
+			for (String t: camelCaseToWords(s)){
+				//check if String t consist of numbers
+				if(t.matches("\\d+")){
+					//split the number
+					words.add(split_digits_2(t));
+				}
+				else
+					words.add(t);
+			}
 		}
 			
 		return words.toArray(new String[0]);
