@@ -19,14 +19,15 @@ import org.apache.commons.io.FileUtils;
 public class Main {	
 	
 //	private static JavaLexer lexer;
-	private static Pattern p = Pattern.compile("[^a-z0-9 ]", Pattern.CASE_INSENSITIVE);
+	private static Pattern nonAlphaOrNum = Pattern.compile("[^a-z0-9 ]", Pattern.CASE_INSENSITIVE);
+	private static Pattern isInteger = Pattern.compile("\\d+");
 	private static String NUM= "NUMBER";
 	
 	/** Returns true if text contains punctuation
 	 * 
 	 */
 	public static boolean containsPunct(String text){
-		Matcher m = p.matcher(text);
+		Matcher m = nonAlphaOrNum.matcher(text);
 		return m.find();
 	}
 		
@@ -45,7 +46,6 @@ public class Main {
 	 */
 	public static void processFile(File file,File outfile,boolean splitID, int tol) throws IOException{
 		String filePath = file.getAbsolutePath();
-//		String outputFilePath = dest+File.separator+file.getName().substring(0, file.getName().length()-5)+".txt";
 		CharStream cs = new ANTLRFileStream(filePath);
 		JavaLexer lexer = new JavaLexer(cs);
 		
@@ -78,12 +78,20 @@ public class Main {
 				fw.write(NUM);
 			}
 			else if(tType == JavaLexer.IDENTIFIER){
-				//If its an identifier we want to split it
+				/*
+				 * If its an identifier and splitID == true, then we split into individual components.
+				 * Otherwise we just write it as is.
+				 */
+				Matcher m;
 				if(splitID){
-					String[] words = ProcessFile.splitIdentifier(text);
+					String[] words = ProcessFile.splitIdentifier(text,false);
 					if (words.length >= tol){
 						for(String s : words){
-							fw.write(s);
+							m = isInteger.matcher(s);
+							if(m.matches())
+								fw.write(NUM);
+							else
+								fw.write(s);
 							fw.write(' ');
 						}
 					}
@@ -152,7 +160,7 @@ public class Main {
 			if (token.getType() == JavaLexer.IDENTIFIER){
 				if (unique){
 					if(split){
-						String[] words = ProcessFile.splitIdentifier(token.getText());
+						String[] words = ProcessFile.splitIdentifier(token.getText(),false);
 						for(String s: words){
 							if(!set.contains(s)){
 								set.add(s);
@@ -168,12 +176,12 @@ public class Main {
 							fw.write(token.getText()+"\n");
 						}
 					}
-				}
+				}//if
 				else
 					numIdent++;
-			}
+			}//if
 			token = lexer.nextToken();
-		}
+		}//while
 		return numIdent;
 	}
 	
@@ -290,8 +298,6 @@ public class Main {
 //		String dest = "/Users/mingxiao10016/Documents/speech_sphinx/test/small-nosplit";
 //		String dest = "/Users/mingxiao10016/Documents/speech_sphinx/test/small_lexed";
 		
-		
-
 	}//end main
 	
 }//end class

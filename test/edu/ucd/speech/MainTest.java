@@ -6,6 +6,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import opennlp.tools.util.ObjectStream;
@@ -20,13 +21,13 @@ public class MainTest {
 
 	@Test
 	public void testStringUtils(){
-		String[] res = ProcessFile.splitIdentifier("_hello__word_IgnoreResult");
+		String[] res = ProcessFile.splitIdentifier("_hello__word_IgnoreResult",false);
 		String[] expected = {"hello","word","Ignore","Result"};
 		assertArrayEquals(res, expected);
 //		for(String s: res)
 //			System.out.println(s);
 		
-		res = ProcessFile.splitIdentifier("_arrow_button__down");
+		res = ProcessFile.splitIdentifier("_arrow_button__down",false);
 		String[] expected2 = {"arrow","button","down"};
 		assertArrayEquals(res, expected2);
 //		for(String s: res)
@@ -61,10 +62,70 @@ public class MainTest {
 	@Test
 	public void testSplitIdentifier(){
 		String test = "testUnusedCodeBug189394";
-		String[] actual = ProcessFile.splitIdentifier(test);
+		String[] actual = ProcessFile.splitIdentifier(test,true);
 		String[] expected = {"test","Unused","Code","Bug","1 8 9 3 9 4"};
 		assertArrayEquals(expected,actual);
+		
+		actual = ProcessFile.splitIdentifier(test, false);
+		expected[expected.length-1]="189394";
+		assertArrayEquals(expected,actual);
 	}
+	
+	@Test
+	public void testPrintIdents(){
+		String dir ="/Users/mingxiao10016/Documents/speech_sphinx/cross-validation/partition/test-0";
+		
+		try {
+			Main.countIdentDirectory(new File(dir), true, "test-0-nosplit-unique-identifiers", false);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+//	@Test
+//	public void testStuff(){
+////		File f = new File("/Users/mingxiao10016/Documents/speech_sphinx/cross-validation/partitions/test-2");
+////		File out = new File("/Users/mingxiao10016/Documents/speech_sphinx/cross-validation/split3-NUM/test-2");
+////		File f = new File("/Users/mingxiao10016/Documents/speech_sphinx/test/small");
+////		File out = new File("/Users/mingxiao10016/Documents/speech_sphinx/test/split3-NUM");
+//		
+//		HashMap<String,String> map = new HashMap<String,String>();
+//		String base_source = "/Users/mingxiao10016/Documents/speech_sphinx/cross-validation/partitions/";
+//		String base_dest = "/Users/mingxiao10016/Documents/speech_sphinx/cross-validation/nosplit/";
+////		map.put(base_source+"train-0", base_dest+"train-0");
+////		map.put(base_source+"train-1", base_dest+"train-1");
+////		map.put(base_source+"train-2", base_dest+"train-2");
+////		map.put(base_source+"train-3", base_dest+"train-3");
+////		map.put(base_source+"train-4", base_dest+"train-4");
+////		map.put(base_source+"train-5", base_dest+"train-5");
+////		map.put(base_source+"train-6", base_dest+"train-6");
+////		map.put(base_source+"train-7", base_dest+"train-7");
+////		map.put(base_source+"train-8", base_dest+"train-8");
+////		map.put(base_source+"train-9", base_dest+"train-9");
+//		
+//		map.put(base_source+"test-0", base_dest+"test-0");
+//		map.put(base_source+"test-1", base_dest+"test-1");
+//		map.put(base_source+"test-2", base_dest+"test-2");
+//		map.put(base_source+"test-3", base_dest+"test-3");
+//		map.put(base_source+"test-4", base_dest+"test-4");
+//		map.put(base_source+"test-5", base_dest+"test-5");
+//		map.put(base_source+"test-6", base_dest+"test-6");
+//		map.put(base_source+"test-7", base_dest+"test-7");
+//		map.put(base_source+"test-8", base_dest+"test-8");
+//		map.put(base_source+"test-9", base_dest+"test-9");
+//		
+//		try {
+//			for(String s: map.keySet()){
+//				File f = new File(s);
+//				File out = new File(map.get(s));
+//				Main.processDirectory(f, out, false, 3);
+//			}
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//	}
 	
 //	@Test
 //	public void testCountIdent(){
@@ -126,21 +187,21 @@ public class MainTest {
 	public void testSplit(){
 //		String source ="/Users/mingxiao10016/Documents/speech_sphinx/test/10-fold";
 //		String dest ="/Users/mingxiao10016/Documents/speech_sphinx/test/split3";
-		String source ="/Users/mingxiao10016/Documents/speech_sphinx/cross-validation/partitions";
-		String dest ="/Users/mingxiao10016/Documents/speech_sphinx/cross-validation/split3";
-		File src = new File(source);
-		File dst = new File(dest);
-		for(File f: src.listFiles()){
-			assert f.isDirectory(); //should be a folder
-			File tmpfile = new File(dst,f.getName());
-			tmpfile.mkdirs();
-			System.out.println(tmpfile.getAbsolutePath());
-			try {
-				Main.processDirectory(f, tmpfile, true, 3);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+//		String source ="/Users/mingxiao10016/Documents/speech_sphinx/cross-validation/partitions";
+//		String dest ="/Users/mingxiao10016/Documents/speech_sphinx/cross-validation/split3";
+//		File src = new File(source);
+//		File dst = new File(dest);
+//		for(File f: src.listFiles()){
+//			assert f.isDirectory(); //should be a folder
+//			File tmpfile = new File(dst,f.getName());
+//			tmpfile.mkdirs();
+//			System.out.println(tmpfile.getAbsolutePath());
+//			try {
+//				Main.processDirectory(f, tmpfile, true, 3);
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
 	}
 }

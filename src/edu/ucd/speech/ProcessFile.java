@@ -358,16 +358,22 @@ public class ProcessFile {
 	}
 	
 	/**
-	 * Given an identifer, split it based on the snake case, and then the camel case
+	 * Given an identifer, split it based on the snake case, then the camel case, and optionally by the
+	 * number.
+	 * If splitNum is true then 
+	 * testCase_123  ==>["test","Case","1 2 3"]
+	 * if false then
+	 * testCase_01  ==>["test","Case","123"]
 	 * @param ident
+	 * @param splitNum - determines whether to split numbers into individual digits.
 	 * @return
 	 */
-	public static String[] splitIdentifier(String ident){
+	public static String[] splitIdentifier(String ident,boolean splitNum){
 		List<String> words = new ArrayList<String>();
 		for(String s : snakeCaseToWords(ident)){
 			for (String t: camelCaseToWords(s)){
 				//check if String t consist of numbers
-				if(t.matches("\\d+")){
+				if(splitNum && t.matches("\\d+")){
 					//split the number
 					words.add(split_digits_2(t));
 				}

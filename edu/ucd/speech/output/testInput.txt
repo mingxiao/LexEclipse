@@ -1,0 +1,9 @@
+package edu  DOT ucd  DOT speech  SEMICOLON 
+
+public class test Input  OPENCURLY 
+	boolean arrow down   EQUALS  true SEMICOLON 
+	public static void main  OPENPAREN String  OPENBRACKET  CLOSEBRACKET  args  CLOSEPAREN  OPENCURLY 
+		int x   EQUALS  NUMBER SEMICOLON 
+	 CLOSECURLY 
+	public void test Unused Code Bug 189394  OPENPAREN  CLOSEPAREN  throws Exception   OPENCURLY  CLOSECURLY 
+ CLOSECURLY 

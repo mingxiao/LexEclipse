@@ -17,6 +17,9 @@ public interface IWorkbench {
 	public int run();
 	public void close();
 	
+	private int test_case01;
+	private int __90_west492;
+	
 	public ResourceUtility getResourceUtility();
 	public Application getModelElement();
 	
