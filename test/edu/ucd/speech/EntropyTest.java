@@ -21,45 +21,61 @@ public class EntropyTest {
 //		model = Entropy.getNGramModel(dict);
 //		model.allocate();
 	}
-
+	
 	@Test
-	public void getBigramEntropy(){
-		String unigramFileName = "train-0-split3-NUM-unigrams";
-		String bigramFileName = "train-0-split3-NUM-bigrams";
-		String tokenFileName = "test-0-bigram-identifiers";
-		String outFileName = tokenFileName+"-entropy";
-		
-		File unigramFile = new File(unigramFileName);
-		File bigramFile = new File(bigramFileName);
-		File tokenFile = new File(tokenFileName);
-		File outFile = new File(outFileName);
-		
-		assert unigramFile.exists();
-		assert bigramFile.exists();
-		assert tokenFile.exists();
+	public void getBeforeAndAfter(){
+		String filePath = "/Users/mingxiao10016/Documents/workspace/LexEclipse/src/edu/ucd/speech/testInput.java";
+		File file = new File(filePath);
+		assert file.exists();
 		
 		try {
-			Entropy.bigramEntropy(unigramFile, bigramFile, tokenFile, outFile);
-		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Entropy.includeBeforeAndAfterToken(file);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+
+//	@Test
+//	public void getTrigramEntropy(){
+//		String unigramFileName = "train-0-split3-NUM-unigrams";
+//		String bigramFileName = "train-0-split3-NUM-bigrams";
+//		String trigramFileName = "train-0-split3-NUM-trigrams.txt";
+//		String tokenFileName = "test-0-trigram-identifiers";
+//		String outFileName = tokenFileName+"-entropy";
+//		
+//		File unigramFile = new File(unigramFileName);
+//		File bigramFile = new File(bigramFileName);
+//		File trigramFile = new File(trigramFileName);
+//		File tokenFile = new File(tokenFileName);
+//		File outFile = new File(outFileName);
+//		
+//		assert unigramFile.exists();
+//		assert bigramFile.exists();
+//		assert trigramFile.exists();
+//		assert tokenFile.exists();
+//		
+//		try {
+//			Entropy.trigramEntropy(unigramFile, bigramFile,trigramFile, tokenFile, outFile);
+//		} catch (NumberFormatException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//	}
 	
 //	@Test
-//	public void unigramToBigram(){
+//	public void unigramToTrigram(){
 //		String unigramFileName = "test-0-unique-identifiers";
-//		String bigramFileName = "test-0-bigram-identifiers";
+//		String trigramFileName = "test-0-trigram-identifiers";
 //		
 //		File unigramFile = new File(unigramFileName);
 //		assert unigramFile.exists();
 //		
-//		File bigramFile = new File(bigramFileName);
+//		File trigramFile = new File(trigramFileName);
 //		try {
-//			Entropy.unigramToBigram(unigramFile, bigramFile);
+//			Entropy.unigramToTrigram(unigramFile, trigramFile);
 //		} catch (IOException e) {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();

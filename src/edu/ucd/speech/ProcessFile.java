@@ -51,14 +51,14 @@ public class ProcessFile {
 	
 	//Added after initial run
 	private static String _BANG = " BANG ";
-	private static String _LESS_THAN = " LESS THAN ";
-	private static String _GREATER_THAN = " GREATER THAN ";
+	private static String _LESS_THAN = " LESSTHAN ";
+	private static String _GREATER_THAN = " GREATERTHAN ";
 	private static String _HASHTAG = " HASHTAG ";
 	private static String _AND = " AND ";
 	private static String _OR = " OR ";
-	private static String _QUESTION_MARK = " QUESTION MARK ";
+	private static String _QUESTION_MARK = " QUESTIONMARK ";
 	private static String _CARET = " CARET ";
-	private static String _DOLLAR_SIGN = " DOLLAR SIGN ";
+	private static String _DOLLAR_SIGN = " DOLLARSIGN ";
 	private static String _TILDE = " TILDE ";
 	
 	

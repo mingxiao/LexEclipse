@@ -18,6 +18,13 @@ import edu.cmu.sphinx.linguist.dictionary.Word;
 import edu.cmu.sphinx.linguist.language.ngram.SimpleNGramModel;
 import edu.cmu.sphinx.util.LogMath;
 
+import org.antlr.runtime.ANTLRFileStream;
+import org.antlr.runtime.CharStream;
+import org.antlr.runtime.Token;
+import org.apache.commons.io.FileUtils;
+
+import edu.ucd.speech.ProcessFile;
+
 /**
  * Look at the n-grams created by splitting completely. 
  * Determine which n-grams came from split identifiers and see which ones gives you a lower entropy.
@@ -321,6 +328,29 @@ public class Entropy {
 		assert bigramMap.size() > 0;
 		return bigramMap;
 	}
+	/**
+	 * Takes a trigram file and returns a hash map (trigram --> log prob)
+	 * NOTE: the hashmap will map from "<token1> <token2> <token3>" (as ONE string) to the log prob. 
+	 * @param trigramFile - arpa format trigram file
+	 * @return
+	 * @throws IOException 
+	 */
+	private static HashMap<String, Float> trigramFileToHashMap(File trigramFile) throws IOException{
+		assert trigramFile.exists();
+		HashMap<String,Float> trigramMap = new HashMap<String, Float>();
+		
+		BufferedReader trigramReader = new BufferedReader(new FileReader(trigramFile));
+		String line;
+		
+		while((line=trigramReader.readLine()) != null){
+			String[] tokens = line.split(" |\t");
+			assert tokens.length == 4;
+			trigramMap.put(tokens[1]+" "+tokens[2]+" "+tokens[3], Float.parseFloat(tokens[0]));
+		}
+		
+		assert trigramMap.size() > 0;
+		return trigramMap;
+	}
 	
 	/**
 	 * Given a file of bigram tokens (tokenFile) we look through our bigram file to find that token.
@@ -346,8 +376,8 @@ public class Entropy {
 		FileWriter fw = new FileWriter(outFile);
 		String line;
 		
-		int unknownUnigrams = 0;
-		int unknownBigrams = 0;
+		int unknownUnigram = 0, unknownBigram = 0;
+		int totalUnigram = 0, totalBigram = 0;
 		
 		while((line = tokenReader.readLine()) != null ){
 			line = line.trim();
@@ -361,24 +391,102 @@ public class Entropy {
 					fw.write(bigramMap.get(bigram)+" "+bigram);
 					fw.write("\n");
 				}else{
-					unknownBigrams++;
+					unknownBigram++;
 				}
+				totalBigram++;
 			}else{
 				assert tokens.length == 1; //unigram
 				if(unigramMap.containsKey(tokens[0])){
 					fw.write(unigramMap.get(tokens[0])+" "+tokens[0]);
 					fw.write("\n");
 				}else{
-					unknownUnigrams++;
+					unknownUnigram++;
 				}
+				totalUnigram++;
 			}
 		}
 		
-		System.out.println("unknown unigrams: "+unknownUnigrams);
-		System.out.println("unknown bigrams: "+unknownBigrams);
+		System.out.println("unknown unigrams: "+unknownUnigram+"/"+totalUnigram);
+		System.out.println("unknown bigrams: "+unknownBigram+"/"+totalBigram);
 		tokenReader.close();
 		fw.flush();
 		fw.close();
+	}
+	/**
+	 * Given a token file (one trigram,bigram, or unigram per line) we output that n-gram along with 
+	 * its log probability in the outFile
+	 * @param unigramFile - arpa format unigram file
+	 * @param bigramFile - arpa format bigram file
+	 * @param trigramFile - arpa format trigram file
+	 * @param tokenFile - tokens we are interested int
+	 * @param outFile
+	 * @throws IOException 
+	 * @throws NumberFormatException 
+	 */
+	public static void trigramEntropy(File unigramFile, File bigramFile, File trigramFile,
+			File tokenFile, File outFile) throws NumberFormatException, IOException{
+		assert unigramFile.exists();
+		assert bigramFile.exists();
+		assert trigramFile.exists();
+		assert tokenFile.exists();
+		
+		HashMap<String,Float> unigramMap = unigramFileToHashMap(unigramFile);
+		HashMap<String,Float> bigramMap = bigramFileToHashMap(bigramFile);
+		HashMap<String,Float> trigramMap = trigramFileToHashMap(trigramFile);
+		
+		BufferedReader tokenReader = new BufferedReader(new FileReader(tokenFile));
+		BufferedWriter trigramWriter = new BufferedWriter(new FileWriter(outFile));
+		String line;
+		
+		//record some stats
+		int unknownUnigram = 0, unknownBigram = 0, unknownTrigram = 0;
+		int totalUnigram = 0, totalBigram = 0, totalTrigram = 0;
+		
+		while((line = tokenReader.readLine()) != null){
+			line = line.trim();
+			assert line.length() > 0;
+			
+			String[] tokens = line.split(" |\t");
+			assert tokens.length > 0;
+			
+			if(tokens.length == 3){
+				//trigrams
+				String trigram = tokens[0]+" "+tokens[1]+" "+tokens[2];
+				if(trigramMap.containsKey(trigram)){
+					trigramWriter.write(trigramMap.get(trigram)+" "+trigram);
+					trigramWriter.newLine();
+				}else{
+					unknownTrigram++;
+				}
+				totalTrigram++;
+			}else if(tokens.length == 2){
+				//bigrams
+				String bigram = tokens[0]+" "+tokens[1];
+				if(bigramMap.containsKey(bigram)){
+					trigramWriter.write(bigramMap.get(bigram)+" "+bigram);
+					trigramWriter.newLine();
+				}else{
+					unknownBigram++;
+				}
+				totalBigram++;
+			}else{
+				//unigrams
+				assert tokens.length == 1;
+				if(unigramMap.containsKey(tokens[0])){
+					trigramWriter.write(unigramMap.get(tokens[0])+" "+tokens[0]);
+					trigramWriter.newLine();
+				}else{
+					unknownUnigram++;
+				}
+				totalUnigram++;
+			}//if
+		}//while
+		System.out.println("Unknown unigrams: "+unknownUnigram+"/"+totalUnigram);
+		System.out.println("Unknown bigrams: "+unknownBigram+"/"+totalBigram);
+		System.out.println("Unknown trigrams: "+unknownTrigram+"/"+totalTrigram);
+		trigramWriter.flush();
+		trigramWriter.close();
+		tokenReader.close();
 	}
 	/**
 	 * Takes a file of identifers (one per line) and splits them into bigram (one per line).
@@ -427,6 +535,61 @@ public class Entropy {
 		identReader.close();
 	}
 	
+	/**
+	 * unigramFile have one identifier per line. If we can derive trigrams from the splitting the 
+	 * identifer, then do so. Otherwise revert to bigrams, then unigrams
+	 * Suppose in the identFile we have:
+	 * 		closeButtonOnExit
+	 * 		nextReady
+	 * Then in the bigram file, we should have:
+	 * 		close Button On
+	 * 		Button on Exit
+	 * 		next Ready
+	 * @param identFile
+	 * @param trigramFile
+	 * @throws IOException 
+	 */
+	public static void unigramToTrigram(File identFile, File trigramFile) throws IOException{
+		assert identFile.exists();
+		
+		BufferedReader identReader = new BufferedReader(new FileReader(identFile));
+		BufferedWriter trigramWriter = new BufferedWriter(new FileWriter(trigramFile));
+		String line;
+		
+		while((line = identReader.readLine()) != null ){
+			line = line.trim();
+			assert line.length() > 0;
+			
+			String[] token = ProcessFile.splitIdentifier(line, false);
+			for(int i=0; i<token.length; i++){
+				if(isInteger(token[i])){
+					token[i] = "NUM";
+				}
+			}//for
+			
+			assert token.length > 0;
+			if(token.length == 1){
+				//unigram
+				trigramWriter.write(token[0]);
+				trigramWriter.newLine();
+			}else if(token.length ==2){
+				trigramWriter.write(token[0]+" "+token[1]);
+				trigramWriter.newLine();
+				//bigram
+			}else{
+				//trigram(s)
+				for(int i =0; i< token.length-2; i++){
+					trigramWriter.write(token[i]+" "+token[i+1]+" "+token[i+2]);
+					trigramWriter.newLine();
+				}
+			}
+		}//while
+		//clean-up
+		trigramWriter.flush();
+		trigramWriter.close();
+		identReader.close();
+	}
+	
 	private static boolean isInteger(String s){
 		try{
 			Integer.parseInt(s);
@@ -434,6 +597,71 @@ public class Entropy {
 		}catch(Exception e){
 			return false;
 		}
+	}
+	
+	/**
+	 * Go through the file and output the trigram of consisting of <token> <identifier> <token>.
+	 * Print the before and after token. 
+	 * First without splitting the tokens
+	 * @param file
+	 * @throws IOException 
+	 */
+	public static void includeBeforeAndAfterToken(File file) throws IOException{
+		assert file.exists();
+		
+		String filePath = file.getAbsolutePath();
+		
+		CharStream cs = new ANTLRFileStream(filePath);
+		JavaLexer lexer = new JavaLexer(cs);
+
+		Token previousPrevious = lexer.nextToken();
+		Token previous = lexer.nextToken();
+		Token current = lexer.nextToken();
+		Token next = lexer.nextToken();
+		Token nextNext = lexer.nextToken();
+		
+//		System.out.println(previous.getText()+":"+previous.getType());
+//		System.out.println(current.getText()+":"+current.getType());
+//		System.out.println(next.getText()+":"+next.getType());
+		
+		while(nextNext.getType() != Token.EOF){
+			if(current.getType() == JavaLexer.IDENTIFIER){
+				System.out.println(
+						previousPrevious.getText()+":"+previousPrevious.getType()+","+
+						previous.getText()+":"+previous.getType()+","+
+						current.getText()+":"+current.getType()+","+
+						next.getText()+":"+next.getType()+","+
+						nextNext.getText()+":"+nextNext.getType());
+				
+				String toOutput = current.getText();
+				
+				//We don't want to include the whitespace token. If previous token is whitespace, then
+				//prepend the previousPrevious token. Otherwise prepend the previous token
+				if(previous.getType() != JavaLexer.WS)
+					toOutput = previous.getText()+" "+toOutput;
+				else
+					toOutput = previousPrevious.getText()+" "+toOutput;
+				
+				//If the next token is whitespace, then append the nextNext token. Otherwise append
+				//the next token
+				if(next.getType() != JavaLexer.WS)
+					toOutput = toOutput +" "+next.getText();
+				else
+					toOutput = toOutput +" "+ nextNext.getText();
+				
+				System.out.println("OUTPUT:"+toOutput);
+				System.out.println("PROCESSED:"+ProcessFile.process_line(toOutput));
+			}
+			
+			
+			
+			previousPrevious = previous;
+			previous = current;
+			current = next;
+			next = nextNext;
+			nextNext = lexer.nextToken();
+		}
+		
 	}
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException, ClassNotFoundException{
